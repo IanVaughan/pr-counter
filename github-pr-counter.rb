@@ -1,16 +1,10 @@
-#dir = File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
-#require File.join(dir, 'httparty')
-#require 'logger'
-#require 'pp'
 require 'httparty'
 
 class GithubPrCounter
   include HTTParty
   base_uri 'https://api.github.com'
-  #logger  ::Logger.new "httparty.log", :debug, :curl
 
   TOKEN = '29ff0d408c258fc28f246e3335612d019417f9f6'
-  #default_params "Authorization" => TOKEN
 
   def initialize
     @options = {
@@ -21,11 +15,12 @@ class GithubPrCounter
     }
   end
 
-  def pr
-    #self.class.get("/repos/" + death_star_path + "/pulls", @options)
-    #self.class.get("/repos/" + death_star_path + "/pulls", logger: @my_logger, log_level: :debug, log_format: :curl)
-    #self.class.get("/repos/" + death_star_path + "pulls/1698", @options)
+  def get_pull_requests
     self.class.get("/repos/" + death_star_path + "pulls", @options)
+  end
+
+  def comments(pr)
+    self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options)
   end
 
   def github_api_path
@@ -37,9 +32,29 @@ class GithubPrCounter
   end
 end
 
-prs = GithubPrCounter.new.pr
-stat = Hash.new(0)
+github = GithubPrCounter.new
+prs = github.get_pull_requests
+
+USERS = %w{mattheworiordan IanVaughan billbillington dpiatek kouno oturley SimonWoolf}
+USERS_REGEXP = Regexp.new USERS.map {|u| "@#{u}" }.join('|')
+
+open_prs = Hash.new(0)
+mentions = Hash.new(0)
+
 prs.each do |pr|
-  stat[pr['user']['login']] += 1
+  user = pr['user']['login']
+  pr_number = pr['number']
+
+  open_prs[user] += 1
+  found_users = pr['body'].scan USERS_REGEXP
+  found_users.each { |u| mentions[u] += 1 }
+
+  comments = github.comments(pr_number)
+  comments.parsed_response.each do |comment|
+    found_users = comment['body'].scan USERS_REGEXP
+    found_users.each { |u| mentions[u] += 1 }
+  end
 end
-puts stat
+
+puts Hash[open_prs.sort_by{|a,b|b}.reverse]
+puts Hash[mentions.sort_by{|a,b|b}.reverse]
