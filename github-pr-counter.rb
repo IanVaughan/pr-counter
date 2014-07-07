@@ -54,10 +54,11 @@ class PrCounter
     mentions = Hash.new(0)
 
     @pr_data.each do |pr|
+      print '.'
       user = pr['user']['login']
       pr_number = pr['number']
 
-      open_prs[user] += 1
+      open_prs["@#{user}"] += 1
       found_users = pr['body'].scan USERS_REGEXP
       found_users.each { |u| mentions[u] += 1 }
 
@@ -68,6 +69,7 @@ class PrCounter
       end
     end
 
+    puts
     puts Hash[open_prs.sort_by{|a,b|b}.reverse]
     puts Hash[mentions.sort_by{|a,b|b}.reverse]
   end
