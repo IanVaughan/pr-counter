@@ -23,9 +23,7 @@ class GithubAccess
     self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options)
   end
 
-  def github_api_path
-    'https://api.github.com/repos/'
-  end
+  private
 
   def death_star_path
     'econsultancy/death_star/'
