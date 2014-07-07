@@ -15,7 +15,7 @@ class GithubAccess
     }
   end
 
-  def get_pull_requests
+  def pull_requests
     self.class.get("/repos/" + death_star_path + "pulls", @options)
   end
 
@@ -48,7 +48,7 @@ class PrCounter
   private
 
   def fetch_data
-    @pr_data = @github.get_pull_requests
+    @pr_data = @github.pull_requests
   end
 
   def crunch
