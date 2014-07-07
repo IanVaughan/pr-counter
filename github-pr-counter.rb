@@ -20,7 +20,11 @@ class GithubAccess
   end
 
   def comments(pr)
-    self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options)
+    self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options).parsed_response
+  end
+
+  def review_comments(pr)
+    self.class.get("/repos/" + death_star_path + "issues/#{pr}/comments", @options).parsed_response
   end
 
   private
@@ -55,18 +59,27 @@ class PrCounter
 
     @pr_data.each do |pr|
       print '.'
+      mention = Hash.new(0)
+
       user = pr['user']['login']
       pr_number = pr['number']
 
       open_prs["@#{user}"] += 1
       found_users = pr['body'].scan USERS_REGEXP
-      found_users.each { |u| mentions[u] += 1 }
+      found_users.each { |u| mention[u] = 1 }
 
       comments = @github.comments(pr_number)
-      comments.parsed_response.each do |comment|
+      comments.each do |comment|
         found_users = comment['body'].scan USERS_REGEXP
-        found_users.each { |u| mentions[u] += 1 }
+        found_users.each { |u| mention[u] = 1 }
       end
+
+      review_comments = @github.review_comments(pr_number)
+      review_comments.each do |comment|
+        found_users = comment['body'].scan USERS_REGEXP
+        found_users.each { |u| mention[u] = 1 }
+      end
+      mentions.merge!(mention) { |k,a,b| a + b }
     end
 
     puts
