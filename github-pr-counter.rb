@@ -1,6 +1,6 @@
 require 'httparty'
 
-class GithubPrCounter
+class GithubAccess
   include HTTParty
   base_uri 'https://api.github.com'
 
@@ -32,29 +32,47 @@ class GithubPrCounter
   end
 end
 
-github = GithubPrCounter.new
-prs = github.get_pull_requests
+class PrCounter
+  USERS = %w{mattheworiordan IanVaughan billbillington dpiatek kouno oturley SimonWoolf}
+  USERS_REGEXP = Regexp.new USERS.map {|u| "@#{u}" }.join('|')
 
-USERS = %w{mattheworiordan IanVaughan billbillington dpiatek kouno oturley SimonWoolf}
-USERS_REGEXP = Regexp.new USERS.map {|u| "@#{u}" }.join('|')
+  def initialize
+    @github = GithubAccess.new
+  end
 
-open_prs = Hash.new(0)
-mentions = Hash.new(0)
+  def run
+    fetch_data
+    crunch
+  end
 
-prs.each do |pr|
-  user = pr['user']['login']
-  pr_number = pr['number']
+  private
 
-  open_prs[user] += 1
-  found_users = pr['body'].scan USERS_REGEXP
-  found_users.each { |u| mentions[u] += 1 }
+  def fetch_data
+    @pr_data = @github.get_pull_requests
+  end
 
-  comments = github.comments(pr_number)
-  comments.parsed_response.each do |comment|
-    found_users = comment['body'].scan USERS_REGEXP
-    found_users.each { |u| mentions[u] += 1 }
+  def crunch
+    open_prs = Hash.new(0)
+    mentions = Hash.new(0)
+
+    @pr_data.each do |pr|
+      user = pr['user']['login']
+      pr_number = pr['number']
+
+      open_prs[user] += 1
+      found_users = pr['body'].scan USERS_REGEXP
+      found_users.each { |u| mentions[u] += 1 }
+
+      comments = @github.comments(pr_number)
+      comments.parsed_response.each do |comment|
+        found_users = comment['body'].scan USERS_REGEXP
+        found_users.each { |u| mentions[u] += 1 }
+      end
+    end
+
+    puts Hash[open_prs.sort_by{|a,b|b}.reverse]
+    puts Hash[mentions.sort_by{|a,b|b}.reverse]
   end
 end
 
-puts Hash[open_prs.sort_by{|a,b|b}.reverse]
-puts Hash[mentions.sort_by{|a,b|b}.reverse]
+PrCounter.new.run
