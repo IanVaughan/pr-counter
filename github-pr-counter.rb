@@ -23,7 +23,7 @@ class GithubAccess
     self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options).parsed_response
   end
 
-  def review_comments(pr)
+  def issues(pr)
     self.class.get("/repos/" + death_star_path + "issues/#{pr}/comments", @options).parsed_response
   end
 
@@ -68,7 +68,7 @@ class PrCounter
       found_users = pr['body'].scan USERS_REGEXP
       found_users.each { |u| mention[u] = 1 }
 
-      review_comments = @github.review_comments(pr_number)
+      review_comments = @github.issues(pr_number)
       review_comments.each do |comment|
         found_users = comment['body'].scan USERS_REGEXP
         found_users.each { |u| mention[u] = 1 }
