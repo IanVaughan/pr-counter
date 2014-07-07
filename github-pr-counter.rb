@@ -68,12 +68,6 @@ class PrCounter
       found_users = pr['body'].scan USERS_REGEXP
       found_users.each { |u| mention[u] = 1 }
 
-      comments = @github.comments(pr_number)
-      comments.each do |comment|
-        found_users = comment['body'].scan USERS_REGEXP
-        found_users.each { |u| mention[u] = 1 }
-      end
-
       review_comments = @github.review_comments(pr_number)
       review_comments.each do |comment|
         found_users = comment['body'].scan USERS_REGEXP
