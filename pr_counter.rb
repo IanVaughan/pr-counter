@@ -59,5 +59,3 @@ class PrCounter
     data
   end
 end
-
-PrCounter.new.run
