@@ -66,8 +66,8 @@ class StatusBoard
 end
 
 class PrCounter
-  USERS = %w{mattheworiordan IanVaughan billbillington dpiatek kouno oturley SimonWoolf}
-  USERS_REGEXP = Regexp.new USERS.map {|u| "@#{u}" }.join('|')
+  USERS = %w{@mattheworiordan @IanVaughan @billbillington @dpiatek @kouno @oturley @SimonWoolf}
+  USERS_REGEXP = Regexp.new USERS.join('|')
 
   def initialize
     @github = GithubAccess.new
@@ -107,6 +107,8 @@ class PrCounter
       end
       mentions.merge!(mention) { |k,a,b| a + b }
     end
+
+    mentions.tap {|h| (USERS - mentions.keys).each {|u| h[u]=0 }}
 
     #@open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
     #@mentions_count = Hash[mentions.sort_by{|a,b|b}.reverse]
