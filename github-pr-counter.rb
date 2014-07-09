@@ -41,27 +41,19 @@ class StatusBoard
   TOKEN = 'YOUR_AUTH_TOKEN'
 
   def initialize
-    @options = {
-      headers: {
-        "Authorization" => "token #{TOKEN}",
-        "User-Agent" => 'HTTParty'
-      }
-    }
+    @options = { "auth_token" => "#{TOKEN}" }
   end
 
   def send data
     items = parsed data
-    update_board_command = %{curl -d '{ "auth_token": "#{TOKEN}", "items" : #{items.to_json} }' http://sweet-econ-dashboard.herokuapp.com/widgets/pulls}
-    system update_board_command
-    #self.class.put("/widgets/pulls", @options)
+    options = @options.merge(items: items).to_json
+    self.class.post("/widgets/pulls", body: options)
   end
 
   private
 
   def parsed data
-    data.collect do |name, value|
-      { "label" => name, "value" => value }
-    end
+    data.collect { |name, value| { "label" => name, "value" => value } }
   end
 end
 
