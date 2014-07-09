@@ -33,4 +33,3 @@ class Github
     'econsultancy/death_star/'
   end
 end
-
