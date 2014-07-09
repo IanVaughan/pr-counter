@@ -34,17 +34,54 @@ class GithubAccess
   end
 end
 
+class StatusBoard
+  include HTTParty
+  base_uri 'http://localhost:3030'
+
+  TOKEN = 'YOUR_AUTH_TOKEN'
+
+  def initialize
+    @options = {
+      headers: {
+        "Authorization" => "token #{TOKEN}",
+        "User-Agent" => 'HTTParty'
+      }
+    }
+  end
+
+  def send data
+    items = parsed data
+    update_board_command = %{curl -d '{ "auth_token": "#{TOKEN}", "items" : #{items.to_json} }' http://localhost:3030/widgets/pulls}
+    system update_board_command
+    #self.class.put("/widgets/pulls", @options)
+  end
+
+  private
+
+  def parsed data
+    data.collect do |name, value|
+      { "label" => name, "value" => value }
+    end
+  end
+end
+
 class PrCounter
   USERS = %w{mattheworiordan IanVaughan billbillington dpiatek kouno oturley SimonWoolf}
   USERS_REGEXP = Regexp.new USERS.map {|u| "@#{u}" }.join('|')
 
   def initialize
     @github = GithubAccess.new
+    @status_board = StatusBoard.new
   end
 
   def run
     fetch_data
     crunch
+    update_board
+  end
+
+  def update_board
+    @status_board.send @mentions_count
   end
 
   private
@@ -76,9 +113,8 @@ class PrCounter
       mentions.merge!(mention) { |k,a,b| a + b }
     end
 
-    puts
-    puts Hash[open_prs.sort_by{|a,b|b}.reverse]
-    puts Hash[mentions.sort_by{|a,b|b}.reverse]
+    @open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
+    @mentions_count = Hash[mentions.sort_by{|a,b|b}.reverse]
   end
 end
 
