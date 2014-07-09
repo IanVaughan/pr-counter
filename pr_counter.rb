@@ -1,6 +1,4 @@
-require 'httparty'
 require_relative 'github'
-require_relative 'status_board'
 
 class PrCounter
   USERS = %w{@mattheworiordan @IanVaughan @billbillington @dpiatek @kouno @oturley @SimonWoolf}
@@ -8,11 +6,10 @@ class PrCounter
 
   def initialize
     @github = Github.new
-    @status_board = StatusBoard.new
   end
 
   def run
-    update_board with crunched fetched_data
+    return crunched fetched_data
   end
 
   private
@@ -44,18 +41,11 @@ class PrCounter
       mentions.merge!(mention) { |k,a,b| a + b }
     end
 
+    # This adds users who returned no matches from github
     mentions.tap { |h| (USERS - mentions.keys).each {|u| h[u]=0 } }
 
     #@open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
     Hash[mentions.sort_by{|a,b|b}]
   end
   alias :crunched :crunch
-
-  def update_board data
-    @status_board.send data
-  end
-
-  def with data
-    data
-  end
 end
