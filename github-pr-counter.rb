@@ -75,26 +75,21 @@ class PrCounter
   end
 
   def run
-    fetch_data
-    crunch
-    update_board
-  end
-
-  def update_board
-    @status_board.send @mentions_count
+    update_board with crunched fetched_data
   end
 
   private
 
   def fetch_data
-    @pr_data = @github.pull_requests
+    @github.pull_requests
   end
+  alias :fetched_data :fetch_data
 
-  def crunch
+  def crunch data
     open_prs = Hash.new(0)
     mentions = Hash.new(0)
 
-    @pr_data.each do |pr|
+    data.each do |pr|
       print '.'
       mention = Hash.new(0)
 
@@ -113,8 +108,19 @@ class PrCounter
       mentions.merge!(mention) { |k,a,b| a + b }
     end
 
-    @open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
-    @mentions_count = Hash[mentions.sort_by{|a,b|b}.reverse]
+    #@open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
+    #@mentions_count = Hash[mentions.sort_by{|a,b|b}.reverse]
+    Hash[mentions.sort_by{|a,b|b}]
+  end
+  alias :crunched :crunch
+
+  def update_board data
+    #@mentions_count = {"@kouno"=>7, "@mattheworiordan"=>7, "@SimonWoolf"=>3, "@billbillington"=>3, "@dpiatek"=>3, "@IanVaughan"=>1}
+    @status_board.send data
+  end
+
+  def with data
+    data
   end
 end
 
