@@ -9,14 +9,12 @@ class StatusBoard
   end
 
   def send data
-    items = parsed data
+    items = parse data
     options = @options.merge(items: items).to_json
     self.class.post("/widgets/pulls", body: options)
   end
 
-  private
-
-  def parsed data
+  def parse data
     data.collect { |name, value| { "label" => name, "value" => value } }
   end
 end
