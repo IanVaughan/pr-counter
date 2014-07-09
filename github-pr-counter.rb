@@ -36,7 +36,7 @@ end
 
 class StatusBoard
   include HTTParty
-  base_uri 'http://localhost:3030'
+  base_uri 'http://sweet-econ-dashboard.herokuapp.com'
 
   TOKEN = 'YOUR_AUTH_TOKEN'
 
@@ -51,7 +51,7 @@ class StatusBoard
 
   def send data
     items = parsed data
-    update_board_command = %{curl -d '{ "auth_token": "#{TOKEN}", "items" : #{items.to_json} }' http://localhost:3030/widgets/pulls}
+    update_board_command = %{curl -d '{ "auth_token": "#{TOKEN}", "items" : #{items.to_json} }' http://sweet-econ-dashboard.herokuapp.com/widgets/pulls}
     system update_board_command
     #self.class.put("/widgets/pulls", @options)
   end
