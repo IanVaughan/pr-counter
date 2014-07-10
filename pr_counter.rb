@@ -1,6 +1,7 @@
 require_relative 'github'
 
 class PrCounter
+  # TODO: make env var
   USERS = %w{@mattheworiordan @IanVaughan @billbillington @dpiatek @kouno @oturley @SimonWoolf}
   USERS_REGEXP = Regexp.new USERS.join('|')
 
@@ -42,7 +43,7 @@ class PrCounter
     end
 
     # This adds users who returned no matches from github
-    mentions.tap { |h| (USERS - mentions.keys).each {|u| h[u]=0 } }
+    mentions.tap { |h| (USERS - mentions.keys).each { |u| h[u]=0 } }
 
     #@open_pr_count = Hash[open_prs.sort_by{|a,b|b}.reverse]
     Hash[mentions.sort_by{|a,b|b}]
