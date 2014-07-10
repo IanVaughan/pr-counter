@@ -16,15 +16,26 @@ class Github
   end
 
   def pull_requests
+    return {} if exceded_limit?
     self.class.get("/repos/" + death_star_path + "pulls", @options)
   end
 
   def comments(pr)
+    return {} if exceded_limit?
     self.class.get("/repos/" + death_star_path + "pulls/#{pr}/comments", @options).parsed_response
   end
 
   def issues(pr)
+    return {} if exceded_limit?
     self.class.get("/repos/" + death_star_path + "issues/#{pr}/comments", @options).parsed_response
+  end
+
+  def rate_limit
+    self.class.get("/rate_limit", @options)
+  end
+
+  def exceded_limit?
+    rate_limit["resources"]["core"]["remaining"] <= 0
   end
 
   private
